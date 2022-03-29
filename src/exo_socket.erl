@@ -234,10 +234,10 @@ maybe_auth_(X, Role0, Opts) ->
 						[Other]),
 				    {error, Other}
 			    catch
-				error:Err ->
+				error:Err:Stacktrace ->
 				    lager:debug("Caught error: ~p~n"
 					   "Trace = ~p~n",
-					   [Err, erlang:get_stacktrace()]),
+					   [Err, Stacktrace]),
 				    shutdown(X, write),
 				    {error, einval}
 			    end;
@@ -501,10 +501,10 @@ accept_probe_ssl(X=#exo_socket { mdata=M, socket=S,
 ssl_accept(Socket, Options, Timeout) -> 
     try
 	begin
-	    case ssl:ssl_accept(Socket, Options, Timeout) of
+	    case ssl:handshake(Socket, Options, Timeout) of
 		{error, ssl_not_started} ->
 		    ssl:start(),
-		    ssl:ssl_accept(Socket, Options, Timeout);
+		    ssl:handshake(Socket, Options, Timeout);
 		Result ->
 		    Result
 	    end

@@ -400,7 +400,7 @@ nonce_value(Request, State) ->
     ETag = unq(proplists:get_value('ETag',Header#http_chdr.other,"")),
     T = now64(),
     TimeStamp = hex(<<T:64>>),
-    hex(crypto:md5([TimeStamp,":",ETag,":",State#state.private_key])).
+    hex(crypto:hash(md5, [TimeStamp,":",ETag,":",State#state.private_key])).
 
 
 %% convert binary to ASCII hex
@@ -413,7 +413,7 @@ now64() ->
 	erlang:system_time(milli_seconds)
     catch
 	error:undef ->
-	    {M,S,Us} = erlang:now(),
+	    {M,S,Us} = erlang:timestamp(),
 	    (M*1000000+S)*1000000+Us
     end.
 

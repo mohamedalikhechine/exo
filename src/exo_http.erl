@@ -227,7 +227,7 @@ wpost_multi_body(Req, Data) ->
     {Boundary,Req1} = 
 	case string:str(Ct0, "boundary=") of
 	    0 ->
-		<<Rnd64:64>> = crypto:rand_bytes(8),
+		<<Rnd64:64>> = crypto:strong_rand_bytes(8),
 		Bnd = integer_to_list(Rnd64),
 		Ct1 = H#http_chdr.content_type ++ 
 		    "; boundary=\""++Bnd ++"\"",
@@ -1210,9 +1210,9 @@ make_digest_response(Cred, Method, AuthParams) ->
     DigestUriValue = proplists:get_value(<<"uri">>,AuthParams,""),
     %% FIXME! Verify Nonce!!!
     A1 = a1(Cred),
-    HA1 = hex(crypto:md5(A1)),
+    HA1 = hex(crypto:hash(md5, A1)),
     A2 = a2(Method, DigestUriValue),
-    HA2 = hex(crypto:md5(A2)),
+    HA2 = hex(crypto:hash(md5, A2)),
     hex(kd(HA1, Nonce++":"++HA2)).
 
 a1({digest,_Path,User,Password,Realm}) ->
@@ -1222,7 +1222,7 @@ a2(Method, Uri) ->
     iolist_to_binary([atom_to_list(Method),":",Uri]).
 
 kd(Secret, Data) ->
-    crypto:md5([Secret,":",Data]).
+    crypto:hash(md5, [Secret,":",Data]).
 
 hex(Bin) ->
     [ element(X+1, {$0,$1,$2,$3,$4,$5,$6,$7,$8,$9,$a,$b,$c,$d,$e,$f}) ||
